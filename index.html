@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUOCO — Pizzeria</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#FF3131;
+  --orange:#FF7A00;
+  --yellow:#FFD600;
+  --green:#00C853;
+  --blue:#2979FF;
+  --pink:#FF2D9F;
+  --cream:#FFF8EE;
+  --dark:#0F0A00;
+  --dark2:#1A1200;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--dark)}
+body{font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cursor{position:fixed;width:16px;height:16px;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .3s;background:var(--yellow);mix-blend-mode:difference}
+#cursor-follower{position:fixed;width:40px;height:40px;border:1px solid rgba(255,214,0,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .12s ease,top .12s ease,width .3s,height .3s}
+#cursor.big{width:60px;height:60px}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:9000;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity 1s,visibility 1s}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.l-emoji{font-size:5rem;animation:spin-pizza 1.5s linear infinite}
+@keyframes spin-pizza{to{transform:rotate(360deg)}}
+.l-name{font-family:'Bebas Neue',sans-serif;font-size:5rem;letter-spacing:.3em;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.l-bar{width:220px;height:3px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.l-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow));border-radius:99px;transition:width .04s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:70px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;background:rgba(15,10,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,214,0,.08)}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.25em;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,248,238,.45);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--yellow)}
+.nav-cta{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.15em;padding:.5rem 1.8rem;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border:none;cursor:pointer;border-radius:2px;text-decoration:none;transition:transform .2s,box-shadow .3s}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,49,49,.4)}
+
+/* HERO */
+#hero{min-height:100vh;display:grid;grid-template-rows:1fr auto;position:relative;overflow:hidden;padding-top:70px}
+.hero-main{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 5%;text-align:center;position:relative;z-index:2;gap:2rem}
+
+/* ANIMATED BG BLOBS */
+.blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:blob-float 8s ease-in-out infinite}
+.blob1{width:500px;height:500px;background:radial-gradient(circle,rgba(255,49,49,.25),transparent 70%);top:-100px;left:-100px;animation-delay:0s}
+.blob2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,122,0,.2),transparent 70%);top:20%;right:-50px;animation-delay:-3s}
+.blob3{width:600px;height:600px;background:radial-gradient(circle,rgba(255,214,0,.12),transparent 70%);bottom:-200px;left:30%;animation-delay:-6s}
+@keyframes blob-float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(.95)}}
+
+.hero-badge{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--orange);background:rgba(255,122,0,.1);border:1px solid rgba(255,122,0,.3);padding:.4rem 1.2rem;border-radius:99px;display:inline-block}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,15vw,14rem);line-height:.85;letter-spacing:.02em;position:relative;z-index:1}
+.hero-title .line1{display:block;color:var(--cream)}
+.hero-title .line2{display:block;background:linear-gradient(135deg,var(--red),var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(255,122,0,.5))}
+.hero-title .line3{display:block;color:transparent;-webkit-text-stroke:2px rgba(255,248,238,.15)}
+
+.pizza-spin{font-size:clamp(6rem,12vw,10rem);animation:slow-spin 20s linear infinite;filter:drop-shadow(0 0 60px rgba(255,122,0,.6));position:relative;z-index:2;display:block}
+@keyframes slow-spin{to{transform:rotate(360deg)}}
+
+.hero-desc{font-size:clamp(1rem,1.5vw,1.2rem);color:rgba(255,248,238,.5);max-width:500px;line-height:1.8;font-weight:400}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.btn-fire{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.12em;padding:.65rem 2.5rem;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border:none;cursor:pointer;border-radius:3px;text-decoration:none;display:inline-block;transition:transform .2s,box-shadow .3s;position:relative;overflow:hidden}
+.btn-fire::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--orange),var(--yellow));opacity:0;transition:opacity .3s}
+.btn-fire:hover::after{opacity:1}
+.btn-fire:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(255,49,49,.5)}
+.btn-fire span{position:relative;z-index:1}
+.btn-outline{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.12em;padding:.65rem 2.5rem;background:transparent;color:var(--cream);border:1px solid rgba(255,248,238,.25);cursor:pointer;border-radius:3px;text-decoration:none;display:inline-block;transition:border-color .3s,transform .2s}
+.btn-outline:hover{border-color:var(--yellow);color:var(--yellow);transform:translateY(-3px)}
+
+/* TICKER */
+.ticker{background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--orange),var(--red));height:48px;display:flex;align-items:center;overflow:hidden;position:relative;z-index:2}
+.ticker-track{display:flex;white-space:nowrap;animation:tick 22s linear infinite}
+.t-item{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.25em;color:#fff;padding:0 2rem;display:flex;align-items:center;gap:.6rem}
+.t-sep{opacity:.5;font-size:.8em}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* NUMBERS SECTION */
+#numbers{padding:80px 5%;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:rgba(255,248,238,.05);position:relative;z-index:2}
+.num-card{padding:3rem 2rem;background:var(--dark);text-align:center;transition:background .3s}
+.num-card:hover{background:var(--dark2)}
+.num-val{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;line-height:1;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.num-label{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,248,238,.3);margin-top:.5rem}
+
+/* MENU */
+#menu{padding:120px 5%;position:relative;overflow:hidden}
+.menu-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(255,122,0,.06),transparent 60%);pointer-events:none}
+.section-label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--orange);margin-bottom:1rem;display:flex;align-items:center;gap:.8rem}
+.section-label::before{content:'';display:block;width:25px;height:1px;background:var(--orange)}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);line-height:.9;letter-spacing:.03em;margin-bottom:4rem}
+.section-title em{font-style:normal;background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px}
+.pizza-card{position:relative;background:var(--dark2);overflow:hidden;cursor:pointer;transition:transform .4s}
+.pizza-card:hover{transform:translateY(-6px)}
+.pizza-card:hover .pc-overlay{opacity:1}
+.pizza-card:hover .pc-emoji{transform:scale(1.15) rotate(10deg)}
+.pc-top{padding:2.5rem;display:flex;align-items:center;justify-content:center;min-height:220px;position:relative;overflow:hidden}
+.pc-bg{position:absolute;inset:0;opacity:.08;transition:opacity .4s}
+.pizza-card:hover .pc-bg{opacity:.15}
+.pc-emoji{font-size:5rem;position:relative;z-index:1;transition:transform .4s;filter:drop-shadow(0 10px 30px rgba(0,0,0,.5))}
+.pc-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,49,49,.15),rgba(255,122,0,.1));opacity:0;transition:opacity .4s}
+.pc-body{padding:1.5rem 2rem 2rem}
+.pc-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em;margin-bottom:.4rem}
+.pc-desc{font-size:.85rem;color:rgba(255,248,238,.4);line-height:1.6;margin-bottom:1.2rem;font-weight:400}
+.pc-footer{display:flex;align-items:center;justify-content:space-between}
+.pc-price{font-family:'Bebas Neue',sans-serif;font-size:2rem;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pc-tag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;padding:.3rem .8rem;border-radius:99px}
+.tag-hot{background:rgba(255,49,49,.15);color:var(--red);border:1px solid rgba(255,49,49,.3)}
+.tag-new{background:rgba(0,200,83,.12);color:var(--green);border:1px solid rgba(0,200,83,.3)}
+.tag-best{background:rgba(255,214,0,.12);color:var(--yellow);border:1px solid rgba(255,214,0,.3)}
+.tag-veg{background:rgba(41,121,255,.12);color:#64b5f6;border:1px solid rgba(41,121,255,.3)}
+.pc-accent-line{height:3px;width:0%;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow));transition:width .4s;margin-top:.1rem}
+.pizza-card:hover .pc-accent-line{width:100%}
+
+/* FEATURED PIZZA */
+#featured{padding:80px 5% 120px;background:linear-gradient(180deg,var(--dark) 0%,rgba(255,49,49,.04) 50%,var(--dark) 100%)}
+.feat-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8%;align-items:center}
+@media(max-width:768px){.feat-wrap{grid-template-columns:1fr}}
+.feat-visual{position:relative;display:flex;align-items:center;justify-content:center}
+.feat-pizza{font-size:clamp(8rem,18vw,16rem);animation:slow-spin 30s linear infinite;filter:drop-shadow(0 0 80px rgba(255,122,0,.5));display:block;line-height:1}
+.feat-ring{position:absolute;width:calc(100% + 40px);height:calc(100% + 40px);border:1px dashed rgba(255,122,0,.2);border-radius:50%;animation:counter-spin 20s linear infinite}
+@keyframes counter-spin{to{transform:rotate(-360deg)}}
+.feat-ring2{position:absolute;width:calc(100% + 80px);height:calc(100% + 80px);border:1px dashed rgba(255,49,49,.1);border-radius:50%;animation:counter-spin 35s linear infinite reverse}
+.feat-content{}
+.feat-flag{display:inline-flex;align-items:center;gap:.5rem;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:1.5rem}
+.feat-flag::before{content:'🔥'}
+.feat-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.5rem);line-height:.92;letter-spacing:.03em;margin-bottom:1.5rem}
+.feat-title strong{background:linear-gradient(135deg,var(--red),var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:normal;font-weight:400}
+.feat-desc{color:rgba(255,248,238,.5);line-height:1.8;margin-bottom:2rem;font-size:1rem;font-weight:400}
+.ingredients-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:2.5rem}
+.ingr{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .9rem;border-radius:99px;background:rgba(255,248,238,.05);border:1px solid rgba(255,248,238,.1);color:rgba(255,248,238,.5);transition:border-color .2s,color .2s}
+.ingr:hover{border-color:var(--orange);color:var(--orange)}
+.feat-price-row{display:flex;align-items:baseline;gap:1rem;margin-bottom:2rem}
+.feat-price{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.feat-size{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,248,238,.3)}
+
+/* AMBIANCE */
+#ambiance{padding:120px 5%}
+.amb-grid{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:3px;height:600px}
+@media(max-width:768px){.amb-grid{grid-template-columns:1fr;height:auto}}
+.amb-cell{position:relative;overflow:hidden;cursor:pointer}
+.amb-cell.span2{grid-row:span 2}
+.amb-inner{width:100%;height:100%;min-height:200px;display:flex;align-items:center;justify-content:center;font-size:4rem;transition:transform .6s}
+.amb-cell:hover .amb-inner{transform:scale(1.05)}
+.amb-overlay2{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,10,0,.9) 0%,transparent 50%);display:flex;align-items:flex-end;padding:1.5rem;pointer-events:none}
+.amb-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.1em;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+.amb-cell1 .amb-inner{background:linear-gradient(135deg,#1a0800,#2d1200,#3d1800);font-size:6rem}
+.amb-cell2 .amb-inner{background:linear-gradient(135deg,#0a0500,#1f0e00,#2d1500)}
+.amb-cell3 .amb-inner{background:linear-gradient(135deg,#150800,#261200,#1a0500)}
+
+/* REVIEW */
+#reviews{padding:80px 5% 120px;background:var(--dark2)}
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:4rem}
+.review-card{padding:2rem;background:var(--dark);border:1px solid rgba(255,248,238,.06);border-radius:2px;position:relative;overflow:hidden;transition:border-color .3s,transform .3s}
+.review-card:hover{border-color:rgba(255,122,0,.3);transform:translateY(-4px)}
+.review-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow));transform:scaleX(0);transition:transform .4s;transform-origin:left}
+.review-card:hover::before{transform:scaleX(1)}
+.review-stars{font-size:1.1rem;margin-bottom:1rem;letter-spacing:.1rem}
+.review-text{font-size:.95rem;color:rgba(255,248,238,.6);line-height:1.7;margin-bottom:1.5rem;font-weight:400}
+.review-author{display:flex;align-items:center;gap:.8rem}
+.review-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.review-name{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,248,238,.4)}
+
+/* FOOTER */
+footer{padding:4rem 5%;border-top:1px solid rgba(255,248,238,.06);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:2rem}
+@media(max-width:768px){footer{grid-template-columns:1fr}}
+.foot-logo{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:.2em;background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.foot-info{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.15em;color:rgba(255,248,238,.25);line-height:2;text-transform:uppercase;text-align:center}
+.foot-links{display:flex;gap:1.5rem;list-style:none;justify-content:flex-end;flex-wrap:wrap}
+.foot-links a{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,248,238,.25);text-decoration:none;transition:color .2s}
+.foot-links a:hover{color:var(--orange)}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(35px);transition:opacity .7s,transform .7s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-follower"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="l-emoji">🍕</div>
+  <div class="l-name">FUOCO</div>
+  <div class="l-bar"><div class="l-fill" id="l-fill"></div></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">FUOCO</a>
+  <ul class="nav-links">
+    <li><a href="#menu">Pizzas</a></li>
+    <li><a href="#featured">La Star</a></li>
+    <li><a href="#reviews">Avis</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Réserver 🔥</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="hero-main">
+    <div class="hero-badge reveal">🏅 Meilleure pizzeria — Seine-Maritime 2025</div>
+    <span class="pizza-spin reveal">🍕</span>
+    <h1 class="hero-title reveal">
+      <span class="line1">PIZZA</span>
+      <span class="line2">FUOCO</span>
+      <span class="line3">NAPOLI</span>
+    </h1>
+    <p class="hero-desc reveal">La vraie pizza napolitaine. Four à bois, pâte 72h, ingrédients importés d'Italie. On ne fait pas semblant.</p>
+    <div class="hero-btns reveal">
+      <a href="#menu" class="btn-fire"><span>Voir les pizzas</span></a>
+      <a href="#" class="btn-outline">Commander en ligne</a>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track" id="ticker"></div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section id="numbers">
+  <div class="num-card reveal">
+    <div class="num-val">72H</div>
+    <div class="num-label">Fermentation pâte</div>
+  </div>
+  <div class="num-card reveal" style="transition-delay:.1s">
+    <div class="num-val">480°</div>
+    <div class="num-label">Four à bois</div>
+  </div>
+  <div class="num-card reveal" style="transition-delay:.2s">
+    <div class="num-val">4.9★</div>
+    <div class="num-label">Note Google</div>
+  </div>
+  <div class="num-card reveal" style="transition-delay:.3s">
+    <div class="num-val">12</div>
+    <div class="num-label">Pizzas uniques</div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="menu-bg"></div>
+  <div class="section-label reveal">Notre carte</div>
+  <h2 class="section-title reveal">LES PIZZAS<br><em>QUI CLAQUENT</em></h2>
+
+  <div class="menu-grid">
+    <div class="pizza-card reveal" style="transition-delay:.1s">
+      <div class="pc-top">
+        <div class="pc-bg" style="background:radial-gradient(circle,rgba(255,49,49,.3),transparent)"></div>
+        <div class="pc-overlay"></div>
+        <div class="pc-emoji">🍕</div>
+      </div>
+      <div class="pc-accent-line"></div>
+      <div class="pc-body">
+        <div class="pc-name">MARGHERITA FUOCO</div>
+        <div class="pc-desc">Tomate San Marzano, fior di latte, basilic frais, huile d'olive vierge</div>
+        <div class="pc-footer">
+          <div class="pc-price">13€</div>
+          <div class="pc-tag tag-best">⭐ Best seller</div>
+        </div>
+      </div>
+    </div>
+    <div class="pizza-card reveal" style="transition-delay:.2s">
+      <div class="pc-top">
+        <div class="pc-bg" style="background:radial-gradient(circle,rgba(255,122,0,.3),transparent)"></div>
+        <div class="pc-overlay"></div>
+        <div class="pc-emoji">🔥</div>
+      </div>
+      <div class="pc-accent-line"></div>
+      <div class="pc-body">
+        <div class="pc-name">DIAVOLA</div>
+        <div class="pc-desc">Tomate, mozzarella, salami piquant calabrais, huile pimentée</div>
+        <div class="pc-footer">
+          <div class="pc-price">15€</div>
+          <div class="pc-tag tag-hot">🌶️ Piquant</div>
+        </div>
+      </div>
+    </div>
+    <div class="pizza-card reveal" style="transition-delay:.3s">
+      <div class="pc-top">
+        <div class="pc-bg" style="background:radial-gradient(circle,rgba(255,214,0,.2),transparent)"></div>
+        <div class="pc-overlay"></div>
+        <div class="pc-emoji">🧀</div>
+      </div>
+      <div class="pc-accent-line"></div>
+      <div class="pc-body">
+        <div class="pc-name">4 FROMAGES</div>
+        <div class="pc-desc">Mozzarella, gorgonzola, parmesan 24 mois, ricotta fraîche</div>
+        <div class="pc-footer">
+          <div class="pc-price">16€</div>
+          <div class="pc-tag tag-new">✨ Nouveau</div>
+        </div>
+      </div>
+    </div>
+    <div class="pizza-card reveal" style="transition-delay:.4s">
+      <div class="pc-top">
+        <div class="pc-bg" style="background:radial-gradient(circle,rgba(0,200,83,.2),transparent)"></div>
+        <div class="pc-overlay"></div>
+        <div class="pc-emoji">🥬</div>
+      </div>
+      <div class="pc-accent-line"></div>
+      <div class="pc-body">
+        <div class="pc-name">VERDE</div>
+        <div class="pc-desc">Base crème, épinards, champignons, ricotta, pignons de pin, roquette</div>
+        <div class="pc-footer">
+          <div class="pc-price">14€</div>
+          <div class="pc-tag tag-veg">🌿 Végétarienne</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED -->
+<section id="featured">
+  <div class="feat-wrap">
+    <div class="feat-visual reveal">
+      <div class="feat-ring"></div>
+      <div class="feat-ring2"></div>
+      <span class="feat-pizza">🍕</span>
+    </div>
+    <div class="feat-content reveal" style="transition-delay:.2s">
+      <div class="feat-flag">La pièce maîtresse</div>
+      <h2 class="feat-title">LA <strong>FUOCO<br>SPECIALE</strong></h2>
+      <p class="feat-desc">Notre pizza signature. Créée par le chef après 3 ans de recherche. Impossible d'en manger qu'une part.</p>
+      <div class="ingredients-row">
+        <span class="ingr">Burrata fraîche</span>
+        <span class="ingr">Nduja calabrais</span>
+        <span class="ingr">Tomate cerise rôtie</span>
+        <span class="ingr">Pistache sicilienne</span>
+        <span class="ingr">Basilic</span>
+        <span class="ingr">Miel de truffe</span>
+      </div>
+      <div class="feat-price-row">
+        <div class="feat-price">19€</div>
+        <div class="feat-size">Ø 33cm · Four à bois</div>
+      </div>
+      <a href="#" class="btn-fire"><span>Commander cette pizza 🍕</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- AMBIANCE -->
+<section id="ambiance">
+  <div class="section-label reveal">L'endroit</div>
+  <h2 class="section-title reveal">VENEZ <em>VIVRE</em><br>L'EXPÉRIENCE</h2>
+  <div class="amb-grid reveal">
+    <div class="amb-cell span2 amb-cell1">
+      <div class="amb-inner">🔥</div>
+      <div class="amb-overlay2"><div class="amb-title">Le four à bois</div></div>
+    </div>
+    <div class="amb-cell amb-cell2">
+      <div class="amb-inner">🌿</div>
+      <div class="amb-overlay2"><div class="amb-title">Les ingrédients</div></div>
+    </div>
+    <div class="amb-cell amb-cell3">
+      <div class="amb-inner">🍷</div>
+      <div class="amb-overlay2"><div class="amb-title">La cave</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="section-label reveal">Ce qu'ils disent</div>
+  <h2 class="section-title reveal">ILS SONT <em>FANS</em></h2>
+  <div class="reviews-grid">
+    <div class="review-card reveal">
+      <div class="review-stars">⭐⭐⭐⭐⭐</div>
+      <p class="review-text">"La meilleure pizza que j'aie mangée hors d'Italie. La pâte est incroyable, légère et croustillante. On y revient chaque semaine."</p>
+      <div class="review-author">
+        <div class="review-avatar" style="background:rgba(255,122,0,.15)">👨</div>
+        <div class="review-name">Marco T. — il y a 2 jours</div>
+      </div>
+    </div>
+    <div class="review-card reveal" style="transition-delay:.1s">
+      <div class="review-stars">⭐⭐⭐⭐⭐</div>
+      <p class="review-text">"La Fuoco Speciale c'est une tuerie absolue. La burrata + nduja c'est le combo parfait. Service rapide et accueil chaleureux."</p>
+      <div class="review-author">
+        <div class="review-avatar" style="background:rgba(255,49,49,.15)">👩</div>
+        <div class="review-name">Léa M. — il y a 5 jours</div>
+      </div>
+    </div>
+    <div class="review-card reveal" style="transition-delay:.2s">
+      <div class="review-stars">⭐⭐⭐⭐⭐</div>
+      <p class="review-text">"Atmosphère magnifique, pizza cuites à la perfection. On voit vraiment la qualité des produits. Une adresse à ne pas manquer dans la région."</p>
+      <div class="review-author">
+        <div class="review-avatar" style="background:rgba(0,200,83,.12)">👨</div>
+        <div class="review-name">Karim B. — il y a 1 semaine</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="foot-logo">FUOCO</div>
+  </div>
+  <div class="foot-info">
+    <div>📍 11 Rue de la Flamme, Grand-Couronne</div>
+    <div>🕐 Mar–Dim : 12h–14h30 · 19h–23h</div>
+    <div>📞 02 35 XX XX XX</div>
+  </div>
+  <ul class="foot-links">
+    <li><a href="#">Instagram</a></li>
+    <li><a href="#">TikTok</a></li>
+    <li><a href="#">Uber Eats</a></li>
+    <li><a href="#">Deliveroo</a></li>
+  </ul>
+</footer>
+
+<script>
+// CURSOR
+const cur = document.getElementById('cursor');
+const fol = document.getElementById('cursor-follower');
+let fx = 0, fy = 0;
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    fol.style.left = e.clientX + 'px';
+    fol.style.top = e.clientY + 'px';
+  }, 80);
+});
+document.querySelectorAll('a,button,.pizza-card,.review-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.classList.add('big'); });
+  el.addEventListener('mouseleave', () => { cur.classList.remove('big'); });
+});
+
+// LOADER
+const loader = document.getElementById('loader');
+const fill = document.getElementById('l-fill');
+let lv = 0;
+const lt = setInterval(() => {
+  lv += Math.random() * 15 + 4;
+  if (lv >= 100) { lv = 100; clearInterval(lt); }
+  fill.style.width = lv + '%';
+  if (lv === 100) setTimeout(() => loader.classList.add('hide'), 600);
+}, 80);
+
+// TICKER
+const items = ['🍕 Pâte 72h fermentation', '🔥 Four à bois 480°', '🇮🇹 Ingrédients italiens', '⭐ Note 4.9/5', '🚴 Livraison disponible', '🌶️ Diavola en feu'];
+const track = document.getElementById('ticker');
+const html = items.map(i => `<span class="t-item"><span class="t-sep">✦</span>${i}</span>`).join('');
+track.innerHTML = html + html;
+
+// SCROLL REVEAL
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// HERO PARALLAX BLOBS
+document.addEventListener('mousemove', e => {
+  const x = (e.clientX / window.innerWidth - 0.5);
+  const y = (e.clientY / window.innerHeight - 0.5);
+  document.querySelectorAll('.blob').forEach((b, i) => {
+    const s = (i + 1) * 12;
+    b.style.transform = `translate(${x * s}px, ${y * s}px)`;
+  });
+});
+</script>
+</body>
+</html>
